@@ -1,0 +1,7 @@
+path: /var/www/sample_app
+adapter: thin
+environment: production
+port: 5000
+servers: 3
+user: www-data
+group: www-data

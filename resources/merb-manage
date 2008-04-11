@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# Copyright (c) 2008 El Draper, el@eldiablo.co.uk
+#
+# merb-manage			Startup script for Merb applications, utilising merb-manage-ctl
+#
+# Can be used within /etc/init.d to ensure Merb apps fire back up after a reboot
+#
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local:/usr/local/sbin:/usr/local/bin
+CONF_DIR=/etc/merb-manage
+
+# Default return value
+RETVAL=0
+
+# Exit if we can't find the merb-manage-ctl script
+which merb-manage-ctl >/dev/null || exit 0
+
+# Validate config directory
+[ -d "$CONF_DIR" ] || exit 0
+
+# Evaluate command
+case "$1" in
+    start)
+      merb-manage-ctl start -c $CONF_DIR
+      RETVAL=$?
+  ;;
+    stop)
+      merb-manage-ctl stop -c $CONF_DIR
+      RETVAL=$?
+  ;;
+    restart)
+      merb-manage-ctl restart -c $CONF_DIR
+      RETVAL=$?
+  ;;
+    *)
+      echo "Usage: merb-manage-ctl {start|stop|restart}"
+      exit 1
+  ;;
+esac
+
+exit $RETVAL

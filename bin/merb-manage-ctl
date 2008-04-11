@@ -1,0 +1,72 @@
+#!/usr/bin/ruby
+#
+# Copyright (c) 2008 El Draper, el@eldiablo.co.uk
+#
+# merb-manage-ctl     Controller script for starting/stopping/restarting configured Merb applications
+#
+require "yaml"
+
+# Default config directory
+configuration_directory = "/etc/merb-manage"
+
+# Validate
+raise "No arguments specified!" if ARGV.length == 0
+
+#See if there is a -c argument
+if ARGV.include?("-c")
+  # Attempt to grab the specified config directory
+  config = ARGV[ARGV.index("-c") + 1]
+  configuration_directory = config unless config.nil?
+end
+
+# This iterates through each config found in the configuration directory, executing the specified block for each
+def each_config(config, &block)
+  Dir.entries("#{config}").select { |e| e[e.length - 3, 3] == "yml" }.each do |yml|
+    begin
+      result = yield YAML.load(open(File.join(config, yml)))
+      puts "#{yml}:"
+      result.split("\n").each { |r| puts r }
+    rescue Exception => err
+      puts "Exception (#{yml}): #{err.message}"
+    end
+  end
+end
+
+# This starts the server as per the specified yml config
+def start(yml)
+  command = "merb -m #{yml['path']} "
+  command += "-u #{yml['user']} " unless yml["user"].nil?
+  command += "-G #{yml['group']} " unless yml["group"].nil?
+  command += "-a #{yml['adapter']} " unless yml["adapter"].nil?
+  command += "-e #{yml['environment']} " unless yml["environment"].nil?
+  command += "-c #{yml['servers']} " unless yml["servers"].nil?
+  command += "-p #{yml['port']} " unless yml["port"].nil?
+  command += "-l #{yml['logging']} " unless yml["logging"].nil?
+  command = "su #{yml['user']} -c \"#{command}\"" unless yml["user"].nil?
+
+  `#{command}`
+end
+
+# This stops the server as per the specified yml config
+def stop(yml)
+  `merb -m #{yml["path"]} -k all`
+end
+
+# Evaluate the action being requested
+case ARGV[0]
+  when "start":
+    each_config(configuration_directory) do |yml|
+      start(yml)
+    end
+  when "restart":
+    each_config(configuration_directory) do |yml|
+      stop(yml)
+      start(yml)
+    end
+  when "stop":
+    each_config(configuration_directory) do |yml|
+      stop(yml)
+    end
+else
+  raise "Argument `#{ARGV[0]}` not recognised!"
+end
