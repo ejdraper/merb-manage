@@ -12,7 +12,7 @@ configuration_directory = "/etc/merb-manage"
 # Validate
 raise "No arguments specified!" if ARGV.length == 0
 
-#See if there is a -c argument
+# See if there is a -c argument
 if ARGV.include?("-c")
   # Attempt to grab the specified config directory
   config = ARGV[ARGV.index("-c") + 1]
@@ -40,10 +40,10 @@ def start(yml)
   command += "-a #{yml['adapter']} " unless yml["adapter"].nil?
   command += "-e #{yml['environment']} " unless yml["environment"].nil?
   command += "-c #{yml['servers']} " unless yml["servers"].nil?
+  command += "-d " if yml["servers"].nil?
   command += "-p #{yml['port']} " unless yml["port"].nil?
   command += "-l #{yml['logging']} " unless yml["logging"].nil?
   command = "su #{yml['user']} -c \"#{command}\"" unless yml["user"].nil?
-
   `#{command}`
 end
 
@@ -52,7 +52,7 @@ def stop(yml)
   `merb -m #{yml["path"]} -k all`
 end
 
-# Evaluate the action being requested
+# Evaluate and execute the action being requested
 case ARGV[0]
   when "start":
     each_config(configuration_directory) do |yml|
@@ -68,5 +68,5 @@ case ARGV[0]
       stop(yml)
     end
 else
-  raise "Argument `#{ARGV[0]}` not recognised!"
+  puts "Usage: merb-manage-ctl {start|stop|restart} (-c CONFIG_DIR)"
 end

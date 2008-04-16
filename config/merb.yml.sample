@@ -5,3 +5,4 @@ port: 5000
 servers: 3
 user: www-data
 group: www-data
+logging: info

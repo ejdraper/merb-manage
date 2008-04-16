@@ -9,12 +9,12 @@ require "rake/gempackagetask"
 # Define the merb-manage gem spec
 spec = Gem::Specification.new do |s|
   s.name = "merb-manage"
-  s.version = "0.2"
+  s.version = "0.3"
   s.author = "El Draper"
   s.email = "el@eldiablo.co.uk"
-  s.homepage = "http://crazycool.co.uk/blog/tags/merb-manage"
+  s.homepage = "http://github.com/eldiablo/merb-manage"
   s.platform = Gem::Platform::RUBY
-  s.summary = "Provides easy configuration of Merb applications, including multiple servers and different adapters"
+  s.summary = "Provides easy configuration and management of Merb applications, including multiple servers and different adapters"
   s.files = FileList["{bin,config,resources}/**/*"].to_a
   s.executables << "merb-manage-ctl"
   s.add_dependency("merb", ">= 0.9.2")

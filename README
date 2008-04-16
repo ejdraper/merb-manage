@@ -1,1 +1,38 @@
 merb-manage: a tool for controlling and configuring Merb applications
+
+Usage:
+
+	merb-manage-ctl [start|stop|restart] (-c CONFIG_DIR)
+		start: starts any instances of Merb applications configured within the CONFIG_DIR (defaults to /etc/merb-manage)
+		stop: stops any instances of Merb applications configured within the CONFIG_DIR
+		restart: stops, then starts any instances of Merb applications configured within the CONFIG_DIR
+		
+	merb-manage [start|stop|restart]
+		this script can be used as a startup script, for example within /etc/init.d, to call out to merb-manage-ctl to start Merb applications when a server starts
+		
+
+Configuration:
+
+	YAML configuration files define the Merb application settings for merb-manage. Generally you can store the configuration within the config directory of your Merb application (config/merb-manage.yml), and then symlink this to a file within the configuration directory (/etc/merb-manage/myapp.yml).
+	
+	Configuration might look like the following:
+	
+		path: /var/www/sample_app
+		adapter: thin
+		environment: production
+		port: 5000
+		servers: 3
+		user: www-data
+		group: www-data
+		logging: info
+
+	Here are the supported parameters:
+		user:			the user that the application should run as - if specified, the Merb application is started with an su USER -c "COMMAND", and the user is passed through to the Merb startup command
+		group:			the group that the application runs under, passed through to the Merb startup command
+		adapter:		the web application server adapter, such as mongrel, thin etc - anything that your installation of Merb supports
+		environment:	the Merb environment to run as, development, test or production
+		servers:		the amount of servers to start (for clustering/load balancing etc)
+		port:			the port to start the Merb application on (in the case of multiple servers, the ports will be sequential from the port specified, i.e. servers set to 3, with port set to 5000, would start the application on 5000, 5001 and 5002)
+		logging:		the logging level to pass through to Merb - debug, info, warn, error and fatal
+		
+	Most of these options can be left off if you simply want the Merb defaults - if "servers" isn't specified however, then Merb will be passed the "-d" flag to ensure that the single Merb server will run in daemonized mode.
