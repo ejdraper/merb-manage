@@ -9,26 +9,22 @@ require "yaml"
 # Default config directory
 configuration_directory = "/etc/merb-manage"
 
-# Validate
-raise "No arguments specified!" if ARGV.length == 0
-
-# See if there is a -c argument
-if ARGV.include?("-c")
-  # Attempt to grab the specified config directory
-  config = ARGV[ARGV.index("-c") + 1]
-  configuration_directory = config unless config.nil?
-end
-
 # This iterates through each config found in the configuration directory, executing the specified block for each
 def each_config(config, &block)
-  Dir.entries("#{config}").select { |e| e[e.length - 3, 3] == "yml" }.each do |yml|
-    begin
-      result = yield YAML.load(open(File.join(config, yml)))
-      puts "#{yml}:"
-      result.split("\n").each { |r| puts r }
-    rescue Exception => err
-      puts "Exception (#{yml}): #{err.message}"
+  begin
+    Dir.entries(config).select { |e| e[e.length - 3, 3] == "yml" }.each do |yml|
+      begin
+        result = yield YAML.load(open(File.join(config, yml)))
+        puts "#{yml}:"
+        result.split("\n").each { |r| puts r }
+      rescue Exception => err
+        puts "Exception (#{yml}): #{err.message}"
+      end
     end
+  rescue Errno::ENOENT
+    puts "Unable to find directory - #{config}"
+  rescue Errno::ENOTDIR
+    puts "Not a directory - #{config}"
   end
 end
 
@@ -52,6 +48,13 @@ def stop(yml)
   `merb -m #{yml["path"]} -k all`
 end
 
+# See if there is a -c argument
+if ARGV.include?("-c")
+  # Attempt to grab the specified config directory
+  config = ARGV[ARGV.index("-c") + 1]
+  configuration_directory = config unless config.nil?
+end
+
 # Evaluate and execute the action being requested
 case ARGV[0]
   when "start":
@@ -68,5 +71,6 @@ case ARGV[0]
       stop(yml)
     end
 else
+  # Print out the usage as the arguments didn't match a known action
   puts "Usage: merb-manage-ctl {start|stop|restart} (-c CONFIG_DIR)"
 end
