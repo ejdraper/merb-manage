@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #
 # Copyright (c) 2008 El Draper, el@eldiablo.co.uk
 #
@@ -7,14 +7,14 @@
 require "yaml"
 
 # Default config directory
-configuration_directory = "/etc/merb-manage"
+configuration_pattern = "/etc/merb-manage/*.yml"
 
 # This iterates through each config found in the configuration directory, executing the specified block for each
 def each_config(config, &block)
   begin
-    Dir.entries(config).select { |e| e[e.length - 3, 3] == "yml" }.each do |yml|
+    Dir.glob(config) do |yml|
       begin
-        result = yield YAML.load(open(File.join(config, yml)))
+        result = yield YAML.load(open(File.join(yml)))
         puts "#{yml}:"
         result.split("\n").each { |r| puts r }
       rescue Exception => err
@@ -22,7 +22,7 @@ def each_config(config, &block)
       end
     end
   rescue Errno::ENOENT
-    puts "Unable to find directory - #{config}"
+    puts "Unable to find #{config}"
   rescue Errno::ENOTDIR
     puts "Not a directory - #{config}"
   end
@@ -52,25 +52,25 @@ end
 if ARGV.include?("-c")
   # Attempt to grab the specified config directory
   config = ARGV[ARGV.index("-c") + 1]
-  configuration_directory = config unless config.nil?
+  configuration_pattern = config unless config.nil?
 end
 
 # Evaluate and execute the action being requested
 case ARGV[0]
   when "start":
-    each_config(configuration_directory) do |yml|
+    each_config(configuration_pattern) do |yml|
       start(yml)
     end
   when "restart":
-    each_config(configuration_directory) do |yml|
+    each_config(configuration_pattern) do |yml|
       stop(yml)
       start(yml)
     end
   when "stop":
-    each_config(configuration_directory) do |yml|
+    each_config(configuration_pattern) do |yml|
       stop(yml)
     end
 else
   # Print out the usage as the arguments didn't match a known action
-  puts "Usage: merb-manage-ctl {start|stop|restart} (-c CONFIG_DIR)"
+  puts "Usage: merb-manage-ctl {start|stop|restart} (-c CONFIG_GLOB)"
 end
