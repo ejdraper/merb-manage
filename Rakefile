@@ -9,7 +9,7 @@ require "rake/gempackagetask"
 # Define the merb-manage gem spec
 spec = Gem::Specification.new do |s|
   s.name = "merb-manage"
-  s.version = "0.4"
+  s.version = "0.5"
   s.author = "El Draper"
   s.email = "el@eldiablo.co.uk"
   s.homepage = "http://github.com/eldiablo/merb-manage"
